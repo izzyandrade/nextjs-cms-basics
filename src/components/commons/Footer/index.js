@@ -1,6 +1,6 @@
-import { Box, Text, theme } from '../../../theme/components';
+import { Box, Text, theme, Link } from "../../../theme/components";
 
-export function Footer() {
+export function Footer({ description }) {
   return (
     <Box
       tag="footer"
@@ -20,13 +20,14 @@ export function Footer() {
       >
         <Text
           styleSheet={{
-            justifyContent: 'center',
-            color: theme.colors.neutral.x000
+            justifyContent: "center",
+            color: theme.colors.neutral.x000,
           }}
         >
-          &copy; {new Date().getFullYear()} DevSoutinho. Todos os direitos reservados.
+          {description}
         </Text>
+        <Link href="/api/preview">Toggle Preview</Link>
       </Box>
     </Box>
-  )
+  );
 }
