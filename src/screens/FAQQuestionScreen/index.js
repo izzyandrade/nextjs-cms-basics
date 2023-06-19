@@ -2,14 +2,32 @@ import Head from "next/head";
 import { Footer } from "../../components/commons/Footer";
 import { Menu } from "../../components/commons/Menu";
 import { Box, Text, theme } from "../../theme/components";
-import { cmsService } from "../../infra/cms/cmsService";
-import { StructuredText } from "react-datocms";
+import { StructuredText, renderNodeRule } from "react-datocms";
 import { isHeading } from "datocms-structured-text-utils";
-import { renderNodeRule } from "react-datocms";
+import pageHOC from "../../components/hoc/pageHOC";
+import { cmsService } from "../../infra/cms/cmsService";
 
-export async function getStaticPaths() {
+export async function getStaticPaths({ preview }) {
+  const questionsQuery = `
+    query ContentFaqQuestion {
+      allContentFaqQuestions {
+        id
+        title
+      }
+    }
+  `;
+
+  const { data } = await cmsService({
+    query: questionsQuery,
+    preview,
+  });
+
+  const paths = data.allContentFaqQuestions.map((question) => ({
+    params: { id: question.id },
+  }));
+
   return {
-    paths: [{ params: { id: "f138c88d" } }, { params: { id: "h138c88d" } }],
+    paths,
     fallback: false,
   };
 }
@@ -34,13 +52,15 @@ export async function getStaticProps({ params, preview }) {
 
   return {
     props: {
-      pageContent: data.contentFaqQuestion,
-      globalContent: data.globalContent,
+      cmsContent: data,
+      id,
+      title: data.contentFaqQuestion.title,
+      content: data.contentFaqQuestion.content,
     },
   };
 }
 
-export default function FAQQuestionScreen({ pageContent, globalContent }) {
+function FAQQuestionScreen({ cmsContent, title, content }) {
   return (
     <>
       <Head>
@@ -69,10 +89,10 @@ export default function FAQQuestionScreen({ pageContent, globalContent }) {
           }}
         >
           <Text tag="h1" variant="heading1">
-            {pageContent.title}
+            {title}
           </Text>
           <StructuredText
-            data={pageContent.content}
+            data={content}
             customNodeRules={[
               renderNodeRule(isHeading, ({ node, children, key }) => {
                 const tag = `h${node.level}`;
@@ -93,7 +113,9 @@ export default function FAQQuestionScreen({ pageContent, globalContent }) {
         </Box>
       </Box>
 
-      <Footer description={globalContent.globalFooter.description} />
+      <Footer />
     </>
   );
 }
+
+export default pageHOC(FAQQuestionScreen);
