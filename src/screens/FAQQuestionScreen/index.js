@@ -7,7 +7,7 @@ import { isHeading } from "datocms-structured-text-utils";
 import pageHOC from "../../components/hoc/pageHOC";
 import { cmsService } from "../../infra/cms/cmsService";
 
-export async function getStaticPaths({ preview }) {
+export async function getStaticPaths() {
   const questionsQuery = `
     query ContentFaqQuestion {
       allContentFaqQuestions {
@@ -19,7 +19,6 @@ export async function getStaticPaths({ preview }) {
 
   const { data } = await cmsService({
     query: questionsQuery,
-    preview,
   });
 
   const paths = data.allContentFaqQuestions.map((question) => ({
@@ -35,10 +34,18 @@ export async function getStaticPaths({ preview }) {
 export async function getStaticProps({ params, preview }) {
   const { id } = params;
 
-  const contentQuery = `query {
-      contentFaqQuestion {
+  const contentQuery = `
+    query ContentFaqQuestion($id: ItemId) {
+      contentFaqQuestion(filter: {
+        id:{
+          eq: $id
+        }
+      }) {
+        id
         title
         content {
+          blocks
+          links
           value
         }
       }
@@ -48,6 +55,9 @@ export async function getStaticProps({ params, preview }) {
   const { data } = await cmsService({
     query: contentQuery,
     preview,
+    variables: {
+      id,
+    },
   });
 
   return {

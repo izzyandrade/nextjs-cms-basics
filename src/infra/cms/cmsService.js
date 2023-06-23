@@ -11,7 +11,7 @@ function getEndpoint(preview) {
   return preview ? PREVIEW_ENDPOINT : BASE_ENDPOINT;
 }
 
-export async function cmsService({ query, preview }) {
+export async function cmsService({ query, preview, variables }) {
   try {
     const response = await fetch(getEndpoint(preview), {
       method: "POST",
@@ -20,7 +20,7 @@ export async function cmsService({ query, preview }) {
         Accept: "application/json",
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_DATOCMS_API_TOKEN}`,
       },
-      body: JSON.stringify({ query: query }),
+      body: JSON.stringify({ query, variables }),
     }).then(async (res) => {
       const body = await res.json();
       if (!body.errors) return body;
